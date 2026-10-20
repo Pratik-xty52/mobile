@@ -1,0 +1,1828 @@
+*Final Practical list - Make sure, your jounals are completed the next time you come for the practical.*
+
+Practical 1A - https://docs.google.com/document/d/1GLS2TYk3q-cV8x23Lg4Bt4zAa5xo-RRWaUcHuKHB8P0/edit?usp=sharing
+
+simple calculator / 
+In NetBeans:
+1. Add/configure Apache Tomcat (prefer Tomcat 10+).
+2. Choose File → New Project → Java with Ant → Web Application.
+3. Name it ServletCalculator, select Tomcat, and finish.
+4. Right-click Web Pages → New → HTML File; name it index.
+Put this in index.html:
+
+<!DOCTYPE html>
+<html>
+<head><title>Calculator</title></head>
+<body>
+    <h2>Servlet Calculator</h2>
+
+    <form action="CalcServlet" method="post">
+        Number 1: <input type="number" name="t1" required><br><br>
+        Number 2: <input type="number" name="t2" required><br><br>
+
+        <button type="submit" name="btn" value="+">+</button>
+        <button type="submit" name="btn" value="-">-</button>
+        <button type="submit" name="btn" value="*">*</button>
+        <button type="submit" name="btn" value="/">/</button>
+    </form>
+</body>
+</html>
+
+5. Right-click Source Packages → New → Servlet.
+   - Class name: CalcServlet
+   - Package: e.g. com.mycompany.calculator
+   - URL pattern: /CalcServlet
+Replace its generated code with:
+package com.mycompany.calculator;
+
+import java.io.IOException;
+import java.io.PrintWriter;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.annotation.WebServlet;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+
+@WebServlet("/CalcServlet")
+public class CalcServlet extends HttpServlet {
+
+    @Override
+    protected void doPost(HttpServletRequest request,
+                          HttpServletResponse response)
+                          throws ServletException, IOException {
+
+        response.setContentType("text/html;charset=UTF-8");
+
+        try (PrintWriter out = response.getWriter()) {
+            double n1 = Double.parseDouble(request.getParameter("t1"));
+            double n2 = Double.parseDouble(request.getParameter("t2"));
+            String operator = request.getParameter("btn");
+            double result = 0;
+
+            switch (operator) {
+                case "+": result = n1 + n2; break;
+                case "-": result = n1 - n2; break;
+                case "*": result = n1 * n2; break;
+                case "/":
+                    if (n2 == 0) {
+                        out.println("<h2>Cannot divide by zero.</h2>");
+                        return;
+                    }
+                    result = n1 / n2;
+                    break;
+            }
+
+            out.println("<h2>Result: " + result + "</h2>");
+            out.println("<a href='index.html'>Calculate again</a>");
+        }
+    }
+}
+
+6. Right-click the project → Run. NetBeans opens the browser; enter two numbers and click an operator.
+If your server is Tomcat 9 or older, change every jakarta.servlet... import to javax.servlet....
+
+
+
+Practical 1B  - https://docs.google.com/document/d/1Y1d936hRKJ3A4Gzw33MpgYGRoujRurNcXKpLJ_6_7qo/edit?usp=sharing
+makes a Servlet login page: valid username/password shows “Hello username”; otherwise “Login Failed.”/
+
+In NetBeans, create a Web Application project using Tomcat, as in Practical 1a. Then:
+1. Under Web Pages, create login.html.
+
+<!DOCTYPE html>
+<html>
+<head><title>Login</title></head>
+<body>
+    <h2>Login Page</h2>
+
+    <form action="LoginServlet" method="post">
+        Username: <input type="text" name="username" required><br><br>
+        Password: <input type="password" name="password" required><br><br>
+        <input type="submit" value="Login">
+    </form>
+</body>
+</html>
+
+2. Right-click Source Packages → New → Servlet.
+   - Class name: LoginServlet
+   - URL pattern: /LoginServlet
+3. Use this servlet code:
+
+package com.mycompany.login;
+
+import java.io.IOException;
+import java.io.PrintWriter;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.annotation.WebServlet;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+
+@WebServlet("/LoginServlet")
+public class LoginServlet extends HttpServlet {
+
+    @Override
+    protected void doPost(HttpServletRequest request,
+                          HttpServletResponse response)
+                          throws ServletException, IOException {
+
+        response.setContentType("text/html;charset=UTF-8");
+
+        String username = request.getParameter("username");
+        String password = request.getParameter("password");
+
+        try (PrintWriter out = response.getWriter()) {
+
+            // Change these sample credentials if your teacher specifies others
+            if (username.equals("admin") && password.equals("1234")) {
+                out.println("<h2>Hello " + username + "</h2>");
+            } else {
+                out.println("<h2>Login Failed</h2>");
+            }
+
+            out.println("<a href='login.html'>Back to Login</a>");
+        }
+    }
+}
+4. Right-click the project → Run.
+Test it with:
+- Username: admin
+- Password: 1234
+If you use Tomcat 9 or earlier, replace jakarta.servlet in the imports with javax.servlet.
+
+
+Practical 2A - https://docs.google.com/document/d/1X7jAtcFptKJkEcURgq6Upyd8xIaKPvHn9BqkIUw0LAE/edit?usp=sharing
+
+For NetBeans, follow the written MySQL instructions and use this matching code. C:\Users\patel\Downloads\EJ Practical 2a.pdf
+First, create the database in MySQL:
+
+CREATE DATABASE registerdb;
+USE registerdb;
+
+CREATE TABLE user (
+    username VARCHAR(20) PRIMARY KEY,
+    password VARCHAR(20),
+    emailid VARCHAR(20),
+    country VARCHAR(10)
+);
+In NetBeans, create a Web Application project. Add MySQL Connector/J JAR to the project:
+Right-click project → Properties → Libraries → Add JAR/Folder
+Choose your mysql-connector-j JAR file.
+Create index.html inside Web Pages:
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Registration</title>
+</head>
+<body>
+    <form action="RegistrationServlet" method="post">
+        Username: <input type="text" name="uname"><br>
+        Password: <input type="password" name="pw"><br>
+        Email: <input type="text" name="email"><br>
+
+        Country:
+        <select name="coun">
+            <option value="India">India</option>
+            <option value="Bangladesh">Bangladesh</option>
+            <option value="Bhutan">Bhutan</option>
+            <option value="Canada">Canada</option>
+        </select><br><br>
+
+        <input type="submit" value="Register">
+    </form>
+</body>
+</html>
+
+Then create a Servlet named RegistrationServlet, with URL pattern /RegistrationServlet:
+
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.annotation.WebServlet;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+
+@WebServlet("/RegistrationServlet")
+public class RegistrationServlet extends HttpServlet {
+
+    @Override
+    protected void doPost(HttpServletRequest request,
+            HttpServletResponse response)
+            throws ServletException, IOException {
+
+        response.setContentType("text/html");
+        PrintWriter out = response.getWriter();
+
+        String username = request.getParameter("uname");
+        String password = request.getParameter("pw");
+        String email = request.getParameter("email");
+        String country = request.getParameter("coun");
+
+        try {
+            Class.forName("com.mysql.cj.jdbc.Driver");
+
+            Connection con = DriverManager.getConnection(
+                "jdbc:mysql://localhost:3306/registerdb",
+                "root",
+                "YOUR_MYSQL_PASSWORD"
+            );
+
+            PreparedStatement ps = con.prepareStatement(
+                "INSERT INTO user (username, password, emailid, country) VALUES (?, ?, ?, ?)"
+            );
+
+            ps.setString(1, username);
+            ps.setString(2, password);
+            ps.setString(3, email);
+            ps.setString(4, country);
+
+            ps.executeUpdate();
+
+            out.println("<h2>Registration successful</h2>");
+            con.close();
+
+        } catch (Exception e) {
+            out.println("<h2>Error occurred: " + e.getMessage() + "</h2>");
+        }
+    }
+}
+
+Change only YOUR_MYSQL_PASSWORD to your actual MySQL password. The code in the screenshot is the same overall idea, but it is configured for Derby instead of the MySQL database the practical asks for.
+
+Practical 2B - https://docs.google.com/document/d/15tLTjb4oJVyKlyzjFLA6-TxlKSlH1YE3gafpShpg4YE/edit?usp=sharing
+
+Objective: Create a Servlet login validation program using RequestDispatcher.
+- User enters a username and password.
+- If the password is Servlet, CheckLogin forwards the request to Welcome.
+- Welcome displays Welcome <username>.
+- If password is wrong, CheckLogin displays Invalid Login and includes index.html again.
+Create these files in a NetBeans Web Application project.
+index.html — create under Web Pages
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Login Page</title>
+    <meta charset="UTF-8">
+</head>
+<body>
+    <h2>Login</h2>
+
+    <form method="post" action="CheckLogin">
+        User Name:
+        <input type="text" name="t1" required>
+        <br><br>
+
+        Password:
+        <input type="password" name="p1" required>
+        <br><br>
+
+        <input type="submit" value="Login">
+    </form>
+</body>
+</html>
+Welcome.java — create a Servlet with URL pattern /Welcome
+import java.io.IOException;
+import java.io.PrintWriter;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.annotation.WebServlet;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+
+@WebServlet("/Welcome")
+public class Welcome extends HttpServlet {
+
+    @Override
+    protected void doPost(HttpServletRequest request,
+                          HttpServletResponse response)
+                          throws ServletException, IOException {
+
+        response.setContentType("text/html;charset=UTF-8");
+        PrintWriter out = response.getWriter();
+
+        String username = request.getParameter("t1");
+
+        out.println("<h2>Welcome " + username + "</h2>");
+    }
+}
+CheckLogin.java — create a Servlet with URL pattern /CheckLogin
+
+import java.io.IOException;
+import java.io.PrintWriter;
+import jakarta.servlet.RequestDispatcher;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.annotation.WebServlet;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+
+@WebServlet("/CheckLogin")
+public class CheckLogin extends HttpServlet {
+
+    @Override
+    protected void doPost(HttpServletRequest request,
+                          HttpServletResponse response)
+                          throws ServletException, IOException {
+
+        response.setContentType("text/html;charset=UTF-8");
+        PrintWriter out = response.getWriter();
+
+        String password = request.getParameter("p1");
+
+        if ("Servlet".equals(password)) {
+            RequestDispatcher rd =
+                    request.getRequestDispatcher("Welcome");
+
+            rd.forward(request, response);
+
+        } else {
+            out.println("<h3>Invalid Login</h3>");
+
+            RequestDispatcher rd =
+                    request.getRequestDispatcher("index.html");
+
+            rd.include(request, response);
+        }
+    }
+}
+
+Practical 3A - https://docs.google.com/document/d/1c8HHXH7LZbw48IW-GR93KWYeE61vbn3zAr5lv8CF82U/edit?usp=sharing
+
+Objective: Create a Servlet that uses a browser cookie named vc to count how many times the user has visited it.
+- First visit: create vc = 1
+- Later visits: read vc, increase it by 1, and save it again
+- Cookie expires after 30 seconds
+- Display the current visit count
+The PDF contains this code idea, but it assumes the first received cookie is always vc. The version below safely searches for the cookie by name. C:\Users\patel\Downloads\EJ Practical 3a.pdf
+In NetBeans, create a Web Application, then create one Servlet:
+- Class name: TestCookies
+- URL pattern: /TestCookies
+
+import java.io.IOException;
+import java.io.PrintWriter;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.annotation.WebServlet;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+
+@WebServlet("/TestCookies")
+public class TestCookies extends HttpServlet {
+
+    @Override
+    protected void doGet(HttpServletRequest request,
+                         HttpServletResponse response)
+                         throws ServletException, IOException {
+
+        response.setContentType("text/html;charset=UTF-8");
+        PrintWriter out = response.getWriter();
+
+        int count = 1;
+        boolean found = false;
+
+        Cookie[] cookies = request.getCookies();
+
+        if (cookies != null) {
+            for (Cookie cookie : cookies) {
+                if ("vc".equals(cookie.getName())) {
+                    count = Integer.parseInt(cookie.getValue()) + 1;
+                    found = true;
+                    break;
+                }
+            }
+        }
+
+        Cookie visitCookie = new Cookie("vc", String.valueOf(count));
+        visitCookie.setMaxAge(30); // expires after 30 seconds
+        response.addCookie(visitCookie);
+
+        out.println("<h2>Visit Count: " + count + "</h2>");
+
+        if (!found) {
+            out.println("<p>This is your first visit.</p>");
+        }
+
+        out.println("<a href='TestCookies'>Visit again</a>");
+    }
+}
+Run the project and open:
+http://localhost:8080/YourProjectName/TestCookies
+Refresh the page or click Visit again. It will show Count 1, Count 2, Count 3, etc. After you wait 30 seconds without refreshing, it starts again from Count 1.
+
+Practical 3B - https://docs.google.com/document/d/1Ej5dc1mXsUVHKTtrjYCGPmm38k_b7qe3W2C8_NVm1AQ/edit?usp=sharing
+
+Objective: Create a Servlet that demonstrates session creation and session destruction.
+- On the first visit, display Welcome.
+- On later visits in the same session, display Welcome Back.
+- When the user clicks Destroy Session, call session.invalidate() and display Session Destroyed.
+The supplied ODT includes this Servlet code structure. C:\Users\patel\Downloads\EJ Practical 3b.odt
+In NetBeans, create a Web Application and create one Servlet:
+- Class name: TestSession
+- URL pattern: /TestSession
+
+import java.io.IOException;
+import java.io.PrintWriter;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.annotation.WebServlet;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
+
+@WebServlet("/TestSession")
+public class TestSession extends HttpServlet {
+
+    @Override
+    protected void doGet(HttpServletRequest request,
+                         HttpServletResponse response)
+                         throws ServletException, IOException {
+
+        response.setContentType("text/html;charset=UTF-8");
+        PrintWriter out = response.getWriter();
+
+        HttpSession mysession = request.getSession(true);
+
+        out.println("<html><head><title>Test Session</title></head><body>");
+
+        if (request.getParameter("logout") != null) {
+            mysession.invalidate();
+            out.println("<h1>Session Destroyed</h1>");
+
+        } else if (mysession.isNew()) {
+            out.println("<h1>Welcome</h1>");
+
+        } else {
+            out.println("<h1>Welcome Back</h1>");
+        }
+
+        out.println("<br><br>");
+        out.println("<a href='TestSession?logout=true'>Destroy Session</a>");
+        out.println("</body></html>");
+    }
+}
+
+Practical 4A - https://docs.google.com/document/d/17ZQj326xVqxs9TJaMJqklQ0kJYMCF0-jvsjFUdwcrT8/edit?usp=sharing
+
+Practical 4B - https://docs.google.com/document/d/1D2AF30gEzqh8FYHPwlkorK2AOyPZyVgF4OSuYKr6VPA/edit?usp=sharing
+
+Practical 4b - Online Question Answer Application
+Objective: Create an online exam using Servlets and MySQL.
+- Questions, options, and correct answers are stored in a database.
+- QueAnsDBServlet displays the questions with radio buttons.
+- Student submits answers.
+- Marks checks answers from the database and shows the score.
+1. Create the MySQL database
+Open MySQL Workbench or MySQL command line and run:
+CREATE DATABASE queansdb;
+
+USE queansdb;
+
+CREATE TABLE queans (
+    queno INT PRIMARY KEY,
+    question VARCHAR(200),
+    opt1 VARCHAR(100),
+    opt2 VARCHAR(100),
+    opt3 VARCHAR(100),
+    opt4 VARCHAR(100),
+    anskey VARCHAR(1)
+);
+
+INSERT INTO queans VALUES
+(1, 'Which language is used for Servlet programming?',
+ 'Java', 'Python', 'C', 'PHP', '1');
+
+INSERT INTO queans VALUES
+(2, 'Which method is commonly used to send form data to a Servlet?',
+ 'GET', 'POST', 'PUT', 'DELETE', '2');
+
+Here, anskey stores the correct option number.
+- Question 1: 1 means Java is correct.
+- Question 2: 2 means POST is correct.
+2. Create a NetBeans Web Application
+1. Open NetBeans.
+2. Choose File → New Project.
+3. Select Java with Ant → Web Application.
+4. Project name: OnlineExamApp
+5. Select Apache Tomcat as the server.
+6. Click Finish.
+3. Add MySQL Connector/J
+The Servlets need the MySQL JDBC driver.
+1. Download MySQL Connector/J if you do not already have it.
+2. Right-click your project → Properties.
+3. Choose Libraries.
+4. Click Add JAR/Folder.
+5. Select the file named similar to:
+mysql-connector-j-8.x.x.jar
+6. Click OK.
+4. Create QueAnsDBServlet
+1. Right-click Source Packages.
+2. Choose New → Servlet.
+3. Class name: QueAnsDBServlet
+4. Package: dbapp
+5. URL pattern: /QueAnsDBServlet
+6. Replace generated code with:
+
+package dbapp;
+
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.Statement;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.annotation.WebServlet;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+
+@WebServlet("/QueAnsDBServlet")
+public class QueAnsDBServlet extends HttpServlet {
+
+    @Override
+    protected void doGet(HttpServletRequest request,
+                         HttpServletResponse response)
+                         throws ServletException, IOException {
+
+        response.setContentType("text/html;charset=UTF-8");
+        PrintWriter out = response.getWriter();
+
+        try {
+            Class.forName("com.mysql.cj.jdbc.Driver");
+
+            Connection con = DriverManager.getConnection(
+                "jdbc:mysql://localhost:3306/queansdb",
+                "root",
+                "YOUR_MYSQL_PASSWORD"
+            );
+
+            Statement st = con.createStatement();
+            ResultSet rs = st.executeQuery(
+                "SELECT * FROM queans ORDER BY queno"
+            );
+
+            out.println("<html><body>");
+            out.println("<h2>Online Exam</h2>");
+            out.println("<form method='post' action='Marks'>");
+
+            while (rs.next()) {
+                int questionNumber = rs.getInt("queno");
+
+                out.println("<hr>");
+                out.println("<b>" + questionNumber + ". "
+                        + rs.getString("question") + "</b><br><br>");
+
+                out.println("<input type='radio' name='q_"
+                        + questionNumber + "' value='1' required> "
+                        + rs.getString("opt1") + "<br>");
+
+                out.println("<input type='radio' name='q_"
+                        + questionNumber + "' value='2'> "
+                        + rs.getString("opt2") + "<br>");
+
+                out.println("<input type='radio' name='q_"
+                        + questionNumber + "' value='3'> "
+                        + rs.getString("opt3") + "<br>");
+
+                out.println("<input type='radio' name='q_"
+                        + questionNumber + "' value='4'> "
+                        + rs.getString("opt4") + "<br>");
+            }
+
+            out.println("<br><input type='submit' value='Submit Answers'>");
+            out.println("</form></body></html>");
+
+            con.close();
+
+        } catch (Exception e) {
+            out.println("<h3>Error: " + e.getMessage() + "</h3>");
+        }
+    }
+}
+Change this line:
+"YOUR_MYSQL_PASSWORD"
+to your real MySQL password.
+5. Create Marks
+1. Right-click Source Packages.
+2. Choose New → Servlet.
+3. Class name: Marks
+4. Package: dbapp
+5. URL pattern: /Marks
+6. Paste:
+
+package dbapp;
+
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.Statement;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.annotation.WebServlet;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+
+@WebServlet("/Marks")
+public class Marks extends HttpServlet {
+
+    @Override
+    protected void doPost(HttpServletRequest request,
+                          HttpServletResponse response)
+                          throws ServletException, IOException {
+
+        response.setContentType("text/html;charset=UTF-8");
+        PrintWriter out = response.getWriter();
+
+        int marks = 0;
+        int totalQuestions = 0;
+
+        try {
+            Class.forName("com.mysql.cj.jdbc.Driver");
+
+            Connection con = DriverManager.getConnection(
+                "jdbc:mysql://localhost:3306/queansdb",
+                "root",
+                "YOUR_MYSQL_PASSWORD"
+            );
+
+            Statement st = con.createStatement();
+            ResultSet rs = st.executeQuery(
+                "SELECT queno, anskey FROM queans"
+            );
+
+            while (rs.next()) {
+                int questionNumber = rs.getInt("queno");
+
+                String selectedAnswer =
+                    request.getParameter("q_" + questionNumber);
+
+                String correctAnswer = rs.getString("anskey");
+
+                if (correctAnswer.equals(selectedAnswer)) {
+                    marks++;
+                }
+
+                totalQuestions++;
+            }
+
+            out.println("<html><body>");
+            out.println("<h2>Exam Result</h2>");
+            out.println("<h3>Marks: " + marks
+                    + " / " + totalQuestions + "</h3>");
+            out.println("<a href='QueAnsDBServlet'>Try Again</a>");
+            out.println("</body></html>");
+
+            con.close();
+
+        } catch (Exception e) {
+            out.println("<h3>Error: " + e.getMessage() + "</h3>");
+        }
+    }
+}
+
+Again, replace:
+"YOUR_MYSQL_PASSWORD"
+with your actual MySQL password.
+6. Run and test
+1. Ensure MySQL is running.
+2. Right-click OnlineExamApp → Run.
+3. In the browser, open:
+
+Practical 5A - https://docs.google.com/document/d/1t01LEwQf94lt1CdbsykqVI4UkYgZc1CiYJ7_iPCAVoM/edit?usp=sharing
+
+Create these exact files and paste the code.
+1. index.html
+Create under Web Pages:
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Non Blocking Read</title>
+</head>
+<body>
+    <a href="NonBlockingServlet">Non Blocking Servlet</a>
+</body>
+</html>
+2. booklist.txt
+Create under Web Pages:
+Java Programming
+Servlet Programming
+JDBC Programming
+
+3. ReadingListener.java
+Create under Source Packages → nonblkapp:
+
+package nonblkapp;
+
+import java.io.IOException;
+import jakarta.servlet.AsyncContext;
+import jakarta.servlet.ReadListener;
+import jakarta.servlet.ServletInputStream;
+
+public class ReadingListener implements ReadListener {
+
+    private ServletInputStream input;
+    private AsyncContext asyncContext;
+
+    public ReadingListener(ServletInputStream input,
+                           AsyncContext asyncContext) {
+        this.input = input;
+        this.asyncContext = asyncContext;
+    }
+
+    @Override
+    public void onDataAvailable() throws IOException {
+        byte[] buffer = new byte[1024];
+
+        while (input.isReady() && !input.isFinished()) {
+            int length = input.read(buffer);
+
+            if (length > 0) {
+                System.out.println(
+                    new String(buffer, 0, length)
+                );
+            }
+        }
+    }
+
+    @Override
+    public void onAllDataRead() throws IOException {
+        asyncContext.complete();
+    }
+
+    @Override
+    public void onError(Throwable t) {
+        t.printStackTrace();
+        asyncContext.complete();
+    }
+}
+4. ReadingNonBlockingServlet.java
+Create a Servlet in nonblkapp package.
+URL pattern: /ReadingNonBlockingServlet
+
+package nonblkapp;
+
+import java.io.IOException;
+import jakarta.servlet.AsyncContext;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.ServletInputStream;
+import jakarta.servlet.annotation.WebServlet;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+
+@WebServlet(
+    urlPatterns = "/ReadingNonBlockingServlet",
+    asyncSupported = true
+)
+public class ReadingNonBlockingServlet extends HttpServlet {
+
+    @Override
+    protected void doPost(HttpServletRequest request,
+                          HttpServletResponse response)
+                          throws ServletException, IOException {
+
+        AsyncContext asyncContext = request.startAsync();
+
+        ServletInputStream input = request.getInputStream();
+
+        input.setReadListener(
+            new ReadingListener(input, asyncContext)
+        );
+    }
+}
+
+5. NonBlockingServlet.java
+Create a Servlet in nonblkapp package.
+URL pattern: /NonBlockingServlet
+
+package nonblkapp;
+
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import jakarta.servlet.ServletContext;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.annotation.WebServlet;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+
+@WebServlet("/NonBlockingServlet")
+public class NonBlockingServlet extends HttpServlet {
+
+    @Override
+    protected void doGet(HttpServletRequest request,
+                         HttpServletResponse response)
+                         throws ServletException, IOException {
+
+        response.setContentType("text/html;charset=UTF-8");
+
+        ServletContext context = getServletContext();
+
+        InputStream inputStream =
+                context.getResourceAsStream("/booklist.txt");
+
+        String path = "http://"
+                + request.getServerName()
+                + ":"
+                + request.getServerPort()
+                + request.getContextPath()
+                + "/ReadingNonBlockingServlet";
+
+        URL url = new URL(path);
+
+        HttpURLConnection connection =
+                (HttpURLConnection) url.openConnection();
+
+        connection.setDoOutput(true);
+        connection.setRequestMethod("POST");
+        connection.setChunkedStreamingMode(2);
+
+        BufferedReader reader = new BufferedReader(
+                new InputStreamReader(inputStream)
+        );
+
+        BufferedWriter writer = new BufferedWriter(
+                new OutputStreamWriter(
+                        connection.getOutputStream()
+                )
+        );
+
+        String line;
+
+        response.getWriter().println("<h2>File Reader</h2>");
+
+        while ((line = reader.readLine()) != null) {
+            writer.write(line);
+            writer.newLine();
+            writer.flush();
+
+            response.getWriter().println(line + "<br>");
+            response.getWriter().flush();
+        }
+
+        writer.close();
+        reader.close();
+
+        response.getWriter().println("<h3>Reading Completed</h3>");
+    }
+}
+
+Practical 5B - https://docs.google.com/document/d/14ZPvhlKKJMRAwU9JLL0a8CPaFQteVSiL3grBVYgPn_c/edit?usp=sharing
+
+Objective: Create a JSP application that displays values from JSP built-in objects:
+- request
+- response
+- session
+1. Create a Web Application
+1. Open NetBeans.
+2. Click File → New Project.
+3. Select Java with Ant → Web Application.
+4. Project name: JSPImplicitObject
+5. Select Tomcat or GlassFish.
+6. Click Finish.
+2. Create index.jsp
+Right-click Web Pages → New → JSP.
+File name: index
+Paste:
+
+<%@page contentType="text/html" pageEncoding="UTF-8"%>
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>JSP Intrinsic Objects</title>
+</head>
+<body>
+
+    <h2>Enter Details</h2>
+
+    <form action="implicitObjectEx.jsp">
+        Enter your name:
+        <input type="text" name="myname">
+        <br><br>
+
+        Enter your email id:
+        <input type="text" name="mymailid">
+        <br><br>
+
+        <input type="submit" value="Submit">
+    </form>
+
+</body>
+</html>
+
+3. Create implicitObjectEx.jsp
+Right-click Web Pages → New → JSP.
+File name: implicitObjectEx
+Paste:
+
+<%@page contentType="text/html" pageEncoding="UTF-8"%>
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Implicit Objects</title>
+</head>
+<body>
+
+    <h2>Use of Intrinsic Objects in JSP</h2>
+
+    <h3>Your Details</h3>
+    Name: <%= request.getParameter("myname") %><br>
+    Email: <%= request.getParameter("mymailid") %><br>
+
+    <h3>Request Object</h3>
+    Query String: <%= request.getQueryString() %><br>
+    Context Path: <%= request.getContextPath() %><br>
+    Remote Host: <%= request.getRemoteHost() %><br>
+
+    <h3>Response Object</h3>
+    Character Encoding: <%= response.getCharacterEncoding() %><br>
+    Content Type: <%= response.getContentType() %><br>
+    Locale: <%= response.getLocale() %><br>
+
+    <h3>Session Object</h3>
+    Session ID: <%= session.getId() %><br>
+    Creation Time:
+    <%= new java.util.Date(session.getCreationTime()) %><br>
+
+    Last Access Time:
+    <%= new java.util.Date(session.getLastAccessedTime()) %><br>
+
+</body>
+</html>
+
+4. Run
+1. Right-click project → Run.
+2. Browser opens index.jsp.
+3. Enter name and email.
+4. Click Submit.
+It opens implicitObjectEx.jsp and displays request, response, and session values.
+
+Practical 6 - https://docs.google.com/document/d/1rcmqeOiK7mSmSQvCuWWCb9SHiHiks7blUFFpjRYoh_8/edit?usp=sharing
+
+Objective: Pass Name, Age, Hobbies, Email, and Gender from one JSP page to another and validate them using a JavaBean. C:\Users\patel\Downloads\EJ Practical 6.pdf
+Create a Web Application in NetBeans. Then paste these four files.
+1. index.jsp
+Create inside Web Pages:
+
+<%@page contentType="text/html" pageEncoding="UTF-8"%>
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Validation Page</title>
+</head>
+<body>
+
+    <h1>Validation Page</h1>
+
+    <form action="Validate.jsp" method="post">
+
+        Enter Your Name:
+        <input type="text" name="name">
+        <br><br>
+
+        Enter Your Age:
+        <input type="text" name="age">
+        <br><br>
+
+        Select Hobbies:
+        <input type="checkbox" name="hob" value="Singing"> Singing
+        <input type="checkbox" name="hob" value="Reading"> Reading Books
+        <input type="checkbox" name="hob" value="Football"> Playing Football
+        <br><br>
+
+        Enter E-mail:
+        <input type="text" name="email">
+        <br><br>
+
+        Select Gender:
+        <input type="radio" name="gender" value="Male"> Male
+        <input type="radio" name="gender" value="Female"> Female
+        <input type="radio" name="gender" value="Other"> Other
+        <br><br>
+
+        <input type="submit" value="Submit Form">
+
+    </form>
+
+</body>
+</html>
+
+2. CheckerBean.java
+Create a Java Class under Source Packages.
+- Package: mypack
+- Class name: CheckerBean
+
+package mypack;
+
+import java.io.Serializable;
+
+public class CheckerBean implements Serializable {
+
+    private String name;
+    private String age;
+    private String hob;
+    private String email;
+    private String gender;
+    private String error;
+
+    public CheckerBean() {
+        name = "";
+        age = "";
+        hob = "";
+        email = "";
+        gender = "";
+        error = "";
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setAge(String age) {
+        this.age = age;
+    }
+
+    public String getAge() {
+        return age;
+    }
+
+    public void setHob(String hob) {
+        this.hob = hob;
+    }
+
+    public String getHob() {
+        return hob;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setGender(String gender) {
+        this.gender = gender;
+    }
+
+    public String getGender() {
+        return gender;
+    }
+
+    public String getError() {
+        return error;
+    }
+
+    public boolean validate() {
+        boolean result = true;
+        error = "";
+
+        if (name == null || name.trim().equals("")) {
+            error += "<br>Enter Name";
+            result = false;
+        }
+
+        try {
+            int ageValue = Integer.parseInt(age);
+
+            if (ageValue < 1 || ageValue > 99) {
+                error += "<br>Age must be between 1 and 99";
+                result = false;
+            }
+
+        } catch (Exception e) {
+            error += "<br>Enter valid age";
+            result = false;
+        }
+
+        if (hob == null || hob.trim().equals("")) {
+            error += "<br>Select at least one hobby";
+            result = false;
+        }
+
+        String emailRegex = "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$";
+
+        if (email == null || !email.matches(emailRegex)) {
+            error += "<br>Enter valid email";
+            result = false;
+        }
+
+        if (gender == null || gender.trim().equals("")) {
+            error += "<br>Select gender";
+            result = false;
+        }
+
+        return result;
+    }
+}
+
+3. Validate.jsp
+Create inside Web Pages:
+
+<%@page contentType="text/html" pageEncoding="UTF-8"
+        import="mypack.*"%>
+
+<jsp:useBean id="obj"
+             scope="request"
+             class="mypack.CheckerBean">
+
+    <jsp:setProperty name="obj" property="*" />
+
+</jsp:useBean>
+
+<% if (obj.validate()) { %>
+
+    <jsp:forward page="successful.jsp" />
+
+<% } else { %>
+
+    <h3 style="color:red;">
+        <%= obj.getError() %>
+    </h3>
+
+    <jsp:include page="index.jsp" />
+
+<% } %>
+
+4. successful.jsp
+Create inside Web Pages:
+
+<%@page contentType="text/html" pageEncoding="UTF-8"%>
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Success</title>
+</head>
+<body>
+    <h1>DATA VALIDATED SUCCESSFULLY</h1>
+</body>
+</html>
+
+Run steps
+1. Right-click your project → Run.
+2. Browser opens index.jsp.
+3. Enter all details.
+4. Click Submit Form.
+If all values are correct, it shows:
+DATA VALIDATED SUCCESSFULLY
+
+Practical 7 - https://docs.google.com/document/d/1V0lOHM8BbBTNWtQ_7KEkceuDjJNJ_7b5QKMl64VpgOg/edit?usp=sharing
+
+Practical 7 - JSP Registration and Login Using JDBC
+Objective: Register a user in Java DB (Derby), then log in using the stored username and password. C:\Users\patel\Downloads\EJ Practical 7.pdf
+1. Create database
+In NetBeans:
+1. Open Services → Databases → Java DB.
+2. Start the Java DB server.
+3. Right-click Java DB → Create Database.
+4. Enter:
+Database Name: logindb
+User Name: app
+Password: app
+2. Create Web Application
+Create a Web Application project with Tomcat or GlassFish.
+Create these three files inside Web Pages.
+3. registration.jsp
+
+<%@page contentType="text/html" import="java.sql.*"%>
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Registration</title>
+</head>
+<body>
+
+<h1>Registration Page</h1>
+
+<form method="post">
+    Enter User Name:
+    <input type="text" name="uname" required>
+    <br><br>
+
+    Enter Password:
+    <input type="password" name="pass" required>
+    <br><br>
+
+    Enter Email:
+    <input type="email" name="cmail" required>
+    <br><br>
+
+    Enter Country:
+    <input type="text" name="ctry" required>
+    <br><br>
+
+    <input type="submit" value="REGISTER">
+    <input type="reset" value="RESET">
+</form>
+
+<hr>
+
+<%
+if ("POST".equalsIgnoreCase(request.getMethod())) {
+
+    String uname = request.getParameter("uname");
+    String pass = request.getParameter("pass");
+    String email = request.getParameter("cmail");
+    String country = request.getParameter("ctry");
+
+    try {
+        Class.forName("org.apache.derby.jdbc.ClientDriver");
+
+        Connection con = DriverManager.getConnection(
+            "jdbc:derby://localhost:1527/logindb",
+            "app",
+            "app"
+        );
+
+        try {
+            Statement createStmt = con.createStatement();
+
+            createStmt.executeUpdate(
+                "CREATE TABLE userpass ("
+                + "username VARCHAR(50) PRIMARY KEY, "
+                + "password VARCHAR(50), "
+                + "email VARCHAR(100), "
+                + "country VARCHAR(50))"
+            );
+
+            createStmt.close();
+
+        } catch (SQLException e) {
+            // Table already exists
+        }
+
+        PreparedStatement stmt = con.prepareStatement(
+            "INSERT INTO userpass "
+            + "(username, password, email, country) "
+            + "VALUES (?, ?, ?, ?)"
+        );
+
+        stmt.setString(1, uname);
+        stmt.setString(2, pass);
+        stmt.setString(3, email);
+        stmt.setString(4, country);
+
+        int row = stmt.executeUpdate();
+
+        if (row == 1) {
+            out.println("<h2>Registration Successful</h2>");
+            out.println("<a href='login.html'>Click here to login</a>");
+        }
+
+        stmt.close();
+        con.close();
+
+    } catch (SQLException e) {
+        out.println("<h3>Username already exists or database error.</h3>");
+
+    } catch (Exception e) {
+        out.println("<h3>Error: " + e.getMessage() + "</h3>");
+    }
+}
+%>
+
+</body>
+</html>
+
+4. login.html
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Login</title>
+</head>
+<body>
+
+<h1>Login Page</h1>
+
+<form action="Login.jsp" method="post">
+
+    Enter User Name:
+    <input type="text" name="txtName" required>
+    <br><br>
+
+    Enter Password:
+    <input type="password" name="txtPass" required>
+    <br><br>
+
+    <input type="submit" value="LOGIN">
+    <input type="reset" value="RESET">
+
+</form>
+
+</body>
+</html>
+
+5. Login.jsp
+
+<%@page contentType="text/html" import="java.sql.*"%>
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Login Result</title>
+</head>
+<body>
+
+<h1>Login JSP Page</h1>
+
+<%
+String uname = request.getParameter("txtName");
+String pass = request.getParameter("txtPass");
+
+try {
+    Class.forName("org.apache.derby.jdbc.ClientDriver");
+
+    Connection con = DriverManager.getConnection(
+        "jdbc:derby://localhost:1527/logindb",
+        "app",
+        "app"
+    );
+
+    PreparedStatement stmt = con.prepareStatement(
+        "SELECT password FROM userpass WHERE username = ?"
+    );
+
+    stmt.setString(1, uname);
+
+    ResultSet rs = stmt.executeQuery();
+
+    if (rs.next()) {
+        String storedPassword = rs.getString("password");
+
+        if (pass.equals(storedPassword)) {
+            out.println("<h2>LOGIN SUCCESSFUL</h2>");
+            out.println("<h3>Welcome " + uname + "</h3>");
+
+        } else {
+            out.println("<h2>Password does not match</h2>");
+            out.println("<a href='login.html'>Try Again</a>");
+        }
+
+    } else {
+        out.println("<h2>User does not exist</h2>");
+        out.println("<a href='registration.jsp'>Register First</a>");
+    }
+
+    rs.close();
+    stmt.close();
+    con.close();
+
+} catch (Exception e) {
+    out.println("<h3>Error: " + e.getMessage() + "</h3>");
+}
+%>
+
+</body>
+</html>
+
+6. Run
+1. Right-click project → Run.
+2. Open:
+http://localhost:8080/YourProjectName/registration.jsp
+3. Register a new user.
+4. Click Click here to login.
+5. Enter the same username and password.
+6. You should see:
+LOGIN SUCCESSFUL
+
+Practical 8 - https://docs.google.com/document/d/1oYXhia6rQy87JRbWswPGoUGuutfb1B6AtybdANwgHgE/edit?usp=sharing
+
+Objective: Enter employee details and update the existing employee record with the matching employee number (eno). C:\Users\patel\Downloads\EJ Practical 8.pdf
+1. Create Derby database and table
+In NetBeans:
+1. Open Services → Databases → Java DB.
+2. Start Java DB.
+3. Create database:
+Database: empdb
+Username: app
+Password: app
+4. Run this SQL:
+
+CREATE TABLE emp (
+    eno INT PRIMARY KEY,
+    name VARCHAR(50),
+    age INT,
+    desg VARCHAR(50),
+    salary DOUBLE
+);
+
+INSERT INTO emp VALUES
+(101, 'Rahul', 25, 'Developer', 40000);
+
+INSERT INTO emp VALUES
+(102, 'Priya', 28, 'Tester', 45000);
+
+2. Create index.html
+Create it inside Web Pages:
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Update Employee</title>
+</head>
+<body>
+
+    <h2>Update Employee Record</h2>
+
+    <form action="UpdateEmp.jsp" method="post">
+
+        Employee Number:
+        <input type="number" name="eno" required>
+        <br><br>
+
+        Name:
+        <input type="text" name="name" required>
+        <br><br>
+
+        Age:
+        <input type="number" name="age" required>
+        <br><br>
+
+        Designation:
+        <input type="text" name="desg" required>
+        <br><br>
+
+        Salary:
+        <input type="number" name="salary" required>
+        <br><br>
+
+        <input type="reset" value="Reset">
+        <input type="submit" value="Update Employee">
+
+    </form>
+
+</body>
+</html>
+
+3. Create UpdateEmp.jsp
+Create it inside Web Pages:
+
+<%@page contentType="text/html" import="java.sql.*"%>
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Update Employee</title>
+</head>
+<body>
+
+<h2>Updating Employee Record</h2>
+
+<%
+String eno = request.getParameter("eno");
+String name = request.getParameter("name");
+String age = request.getParameter("age");
+String desg = request.getParameter("desg");
+String salary = request.getParameter("salary");
+
+try {
+    Class.forName("org.apache.derby.jdbc.ClientDriver");
+
+    Connection con = DriverManager.getConnection(
+        "jdbc:derby://localhost:1527/empdb",
+        "app",
+        "app"
+    );
+
+    PreparedStatement check = con.prepareStatement(
+        "SELECT * FROM emp WHERE eno = ?"
+    );
+
+    check.setInt(1, Integer.parseInt(eno));
+
+    ResultSet rs = check.executeQuery();
+
+    if (rs.next()) {
+        out.println("<h3>Employee "
+                + rs.getString("name")
+                + " exists.</h3>");
+
+        PreparedStatement pst = con.prepareStatement(
+            "UPDATE emp SET name=?, age=?, desg=?, salary=? "
+            + "WHERE eno=?"
+        );
+
+        pst.setString(1, name);
+        pst.setInt(2, Integer.parseInt(age));
+        pst.setString(3, desg);
+        pst.setDouble(4, Double.parseDouble(salary));
+        pst.setInt(5, Integer.parseInt(eno));
+
+        int result = pst.executeUpdate();
+
+        if (result > 0) {
+            out.println(
+                "<h2>Employee Record Updated Successfully!</h2>"
+            );
+        }
+
+        pst.close();
+
+    } else {
+        out.println(
+            "<h2>Employee Record Does Not Exist!</h2>"
+        );
+    }
+
+    rs.close();
+    check.close();
+    con.close();
+
+} catch (Exception e) {
+    out.println("<h3>Error: " + e.getMessage() + "</h3>");
+}
+%>
+
+<br>
+<a href="index.html">Update Another Employee</a>
+
+</body>
+</html>
+
+4. Run
+1. Create a Web Application in NetBeans.
+2. Add index.html and UpdateEmp.jsp under Web Pages.
+3. Right-click project → Run.
+4. Open:
+http://localhost:8080/YourProjectName/index.html
+5. Test with:
+Employee Number: 101
+Name: Rahul Kumar
+Age: 26
+Designation: Senior Developer
+Salary: 50000
+Expected result:
+Employee Record Updated Successfully!
+
+Practical 9 - https://docs.google.com/document/d/1co42WlvZGlGHuf5L0UV_Fpr_cLxjp9TZHQ8uZnBnnZI/edit?usp=sharing
+
+Objective: Demonstrate JSP Expression Language (EL) using:
+- Form parameter
+- Session value
+- Cookie value
+- Arithmetic, logical, relational, conditional, and empty operators
+Create a Web Application in NetBeans. Create these two JSP files inside Web Pages.
+1. index.jsp
+
+<%@page contentType="text/html" pageEncoding="UTF-8"%>
+<%@page import="jakarta.servlet.http.Cookie"%>
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>JSP EL Example</title>
+</head>
+<body>
+
+    <h3>Welcome to Index Page</h3>
+
+    <%
+        session.setAttribute("user", "Admin");
+
+        Cookie ck = new Cookie("name", "mycookie");
+        response.addCookie(ck);
+    %>
+
+    <form action="ExpressionLanguage.jsp">
+        Enter Name:
+        <input type="text" name="name" required>
+        <br><br>
+
+        <input type="submit" value="Submit">
+    </form>
+
+</body>
+</html>
+
+2. ExpressionLanguage.jsp
+
+<%@page contentType="text/html" pageEncoding="UTF-8"%>
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Expression Language</title>
+</head>
+<body>
+
+    <h2>JSP Expression Language Example</h2>
+
+    <h3>User, Session and Cookie Values</h3>
+
+    Welcome, ${param.name}
+    <br><br>
+
+    Session Value is: ${sessionScope.user}
+    <br><br>
+
+    Cookie Name is: ${cookie.name.value}
+
+    <hr>
+
+    <h3>Arithmetic Operators</h3>
+
+    5 + 4: ${5 + 4}<br>
+    5 - 4: ${5 - 4}<br>
+    10 mod 4: ${10 mod 4}<br>
+    15 div 3: ${15 div 3}<br>
+
+    <hr>
+
+    <h3>Logical Operators</h3>
+
+    true and true: ${true and true}<br>
+    true and false: ${true and false}<br>
+    true or false: ${true or false}<br>
+    not true: ${not true}<br>
+
+    <hr>
+
+    <h3>Relational Operators</h3>
+
+    10.0 == 10: ${10.0 == 10}<br>
+    10 lt 10: ${10 lt 10}<br>
+    20 * 10 != 200: ${(20 * 10) != 200}<br>
+    3 gt 3: ${3 gt 3}<br>
+    3.2 ge 2: ${3.2 ge 2}<br>
+    2 lt 3: ${2 lt 3}<br>
+    4 != 6: ${4 != 6}<br>
+    2 le 4: ${2 le 4}<br>
+
+    <hr>
+
+    <h3>Conditional Operator</h3>
+
+    Result of 10 > 2:
+    ${10 gt 2 ? "greater" : "lesser"}
+
+    <hr>
+
+    <h3>Empty Operator</h3>
+
+    Is empty string empty? ${empty ""}
+
+</body>
+</html>
+
+Run
+1. Right-click the project → Run.
+2. Open index.jsp.
+3. Enter any name, for example Patel.
+4. Click Submit.
+The next page displays your name, the session value Admin, cookie value mycookie, and results of all EL operators.
+
+Practical 10 - https://docs.google.com/document/d/1ijv9OWAfPjw6ZBWexRadTWqypQrXeXq3ZiQhCu6w9GE/edit?usp=sharing
+
+Objective: Demonstrate JSTL Core tags:
+<c:set>, <c:out>, <c:if>, <c:forEach>, <c:url>, <c:choose>, <c:when>, and <c:otherwise>. C:\Users\patel\Downloads\EJ Practical 10.pdf
+Important first step
+Add the JSTL library JAR files to your project.
+- Right-click project → Properties → Libraries → Add JAR/Folder
+- Add JSTL API and implementation JARs provided by your teacher/NetBeans setup.
+The PDF uses this tag line, so use it in every JSP file:
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+Create these files under Web Pages
+
+1)index.html
+
+<!DOCTYPE html>
+<html>
+<body>
+
+    <a href="setDemo.jsp">SetDemo</a><br><br>
+    <a href="Maxif.html">MaxIf</a><br><br>
+    <a href="forEachDemo.jsp">ForEachDemo</a><br><br>
+    <a href="outDemo.jsp">OutDemo</a><br><br>
+    <a href="URLDemo.jsp">URLDemo</a><br><br>
+    <a href="choose_when_otherwise.jsp">
+        Choose When Otherwise
+    </a>
+
+</body>
+</html>
+
+2)setDemo.jsp
+
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+
+<c:set var="pageTitle"
+       scope="application"
+       value="Dukes Soccer League Registration"/>
+
+<h2>${pageTitle}</h2>
+Maxif.html
+<!DOCTYPE html>
+<html>
+<body>
+
+    <form action="IFDemo.jsp">
+        x = <input type="text" name="x"><br><br>
+        y = <input type="text" name="y"><br><br>
+
+        <input type="submit" value="Check Max">
+    </form>
+
+</body>
+</html>
+
+3)IFDemo.jsp
+
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+
+<c:set var="x" value="${param.x}" />
+<c:set var="y" value="${param.y}" />
+
+<c:choose>
+    <c:when test="${x gt y}">
+        <h2>${x} is greater than ${y}</h2>
+    </c:when>
+
+    <c:when test="${y gt x}">
+        <h2>${y} is greater than ${x}</h2>
+    </c:when>
+
+    <c:otherwise>
+        <h2>Both numbers are equal</h2>
+    </c:otherwise>
+</c:choose>
+
+4)forEachDemo.jsp
+
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+
+<h2>Squares from 1 to 10</h2>
+
+<c:forEach begin="1" end="10" var="i">
+    The Square of <c:out value="${i}" />
+    = ${i * i}<br>
+</c:forEach>
+
+5)outDemo.jsp
+
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+
+<c:set var="name" value="John" />
+
+My name is: <c:out value="${name}" />
+
+6)URLDemo.jsp
+
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+
+<c:url value="/index.html" var="homeUrl" />
+
+<a href="${homeUrl}">Go to Home Page</a>
+
+7)choose_when_otherwise.jsp
+
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+
+<c:set var="income" value="${4000 * 4}" />
+
+Your Income is: <c:out value="${income}" />
+<br><br>
+
+<c:choose>
+    <c:when test="${income le 10000}">
+        Income is not good
+    </c:when>
+
+    <c:when test="${income gt 10000}">
+        Income is Very Good
+    </c:when>
+
+    <c:otherwise>
+        Income is undetermined
+    </c:otherwise>
+</c:choose>
+
+Run
+1. Right-click project → Run.
+2. Open:
